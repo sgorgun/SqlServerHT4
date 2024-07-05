@@ -43,18 +43,28 @@ BEGIN
         @C2 CHAR(1) = (SELECT C FROM TicTacToe WHERE ID = 2),
         @C3 CHAR(1) = (SELECT C FROM TicTacToe WHERE ID = 3);
 
+    DECLARE @result VARCHAR(50) = 'Game is still ongoing';
+
+    IF (@A1 = @B1 AND @B1 = @C1 AND @A1 IS NOT NULL) OR
+       (@A2 = @B2 AND @B2 = @C2 AND @A2 IS NOT NULL) OR
+       (@A3 = @B3 AND @B3 = @C3 AND @A3 IS NOT NULL) OR
+       (@A1 = @A2 AND @A2 = @A3 AND @A1 IS NOT NULL) OR
+       (@B1 = @B2 AND @B2 = @B3 AND @B1 IS NOT NULL) OR
+       (@C1 = @C2 AND @C2 = @C3 AND @C1 IS NOT NULL) OR
+       (@A1 = @B2 AND @B2 = @C3 AND @A1 IS NOT NULL) OR
+       (@A3 = @B2 AND @B2 = @C1 AND @A3 IS NOT NULL)
+    BEGIN
+        SET @result = CONCAT('Player ', COALESCE(@A1, @A2, @A3, @B1, @B2, @B3, @C1, @C2, @C3), ' is victorious!');
+    END
+    ELSE IF @A1 IS NOT NULL AND @A2 IS NOT NULL AND @A3 IS NOT NULL AND
+            @B1 IS NOT NULL AND @B2 IS NOT NULL AND @B3 IS NOT NULL AND
+            @C1 IS NOT NULL AND @C2 IS NOT NULL AND @C3 IS NOT NULL
+    BEGIN
+        SET @result = 'The game is a draw!';
+    END
+
     SELECT *,
-        CASE 
-            WHEN @A1 = @B1 AND @B1 = @C1 AND @A1 IS NOT NULL THEN CONCAT('Player ', @A1, ' is victorious!')
-            WHEN @A2 = @B2 AND @B2 = @C2 AND @A2 IS NOT NULL THEN CONCAT('Player ', @A2, ' is victorious!')
-            WHEN @A3 = @B3 AND @B3 = @C3 AND @A3 IS NOT NULL THEN CONCAT('Player ', @A3, ' is victorious!')
-            WHEN @A1 = @A2 AND @A2 = @A3 AND @A1 IS NOT NULL THEN CONCAT('Player ', @A1, ' is victorious!')
-            WHEN @B1 = @B2 AND @B2 = @B3 AND @B1 IS NOT NULL THEN CONCAT('Player ', @B1, ' is victorious!')
-            WHEN @C1 = @C2 AND @C2 = @C3 AND @C1 IS NOT NULL THEN CONCAT('Player ', @C1, ' is victorious!')
-            WHEN @A1 = @B2 AND @B2 = @C3 AND @A1 IS NOT NULL THEN CONCAT('Player ', @A1, ' is victorious!')
-            WHEN @A3 = @B2 AND @B2 = @C1 AND @A3 IS NOT NULL THEN CONCAT('Player ', @A3, ' is victorious!')
-            ELSE 'Game is still ongoing'
-        END AS Result,
+        @result AS Result,
         (SELECT turn FROM PlayerTurn) AS CurrentTurn
     FROM TicTacToe;
 END;
@@ -151,9 +161,9 @@ GO
 -- Start new game:
 EXEC NewGame;
 -- Player X turn:
-EXEC NextMove 'A', 3, 'X';
+EXEC NextMove 'a', 3, 'X';
 -- Player O turn:
-EXEC NextMove 'B', 3, 'O';
+EXEC NextMove 'c', 3, 'O';
 -- Show board state:
 EXEC ShowBoard;
 --Check victory:
